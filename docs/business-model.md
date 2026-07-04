@@ -2,7 +2,7 @@
 
 ## Classification
 
-- Repository: `cloud-itonami-9524`
+- Repository: `cloud-itonami-isic-9524`
 - ISIC Rev.5: `9524`
 - Activity: repair of furniture and home furnishings -- diagnosing and repairing furniture and home furnishings for customers
 - Social impact: community access, data sovereignty, transparent audit

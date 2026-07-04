@@ -1,6 +1,6 @@
 # Governance
 
-`cloud-itonami-9524` is an OSS open-business blueprint for repair of furniture and home furnishings -- diagnosing and repairing furniture and home furnishings for customers.
+`cloud-itonami-isic-9524` is an OSS open-business blueprint for repair of furniture and home furnishings -- diagnosing and repairing furniture and home furnishings for customers.
 Governance covers both the capability layer and the operator model.
 
 ## Maintainers

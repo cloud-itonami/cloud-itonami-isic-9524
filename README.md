@@ -1,4 +1,4 @@
-# cloud-itonami-9524
+# cloud-itonami-isic-9524
 
 Open Business Blueprint for **ISIC Rev.5 9524**: Repair of furniture and home furnishings.
 

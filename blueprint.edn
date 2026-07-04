@@ -1,4 +1,4 @@
-{:itonami.blueprint/id "cloud-itonami-9524"
+{:itonami.blueprint/id "cloud-itonami-isic-9524"
  :itonami.blueprint/name "Repair of furniture and home furnishings"
  :itonami.blueprint/isic-rev5 "9524"
  :itonami.blueprint/domain :services/repair-furniture
