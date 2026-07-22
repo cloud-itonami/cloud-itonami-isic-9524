@@ -40,10 +40,9 @@
   is always a query over an immutable log -- the audit trail a
   customer trusting a repair shop needs, and the evidence an operator
   needs if a repair or a return is later disputed."
-  (:require #?(:clj  [clojure.edn :as edn]
-               :cljs [cljs.reader :as edn])
-            [furniture.registry :as registry]
-            [langchain.db :as d]))
+  (:require [furniture.registry :as registry]
+            [langchain.db :as d]
+            [langchain-store.core :as ls]))
 
 (defprotocol Store
   (ticket [s id])
@@ -212,9 +211,6 @@
    :completion-sequence/jurisdiction {:db/unique :db.unique/identity}
    :return-sequence/jurisdiction     {:db/unique :db.unique/identity}})
 
-(defn- enc [v] (pr-str v))
-(defn- dec* [s] (when s (edn/read-string s)))
-
 (defn- ticket->tx [{:keys [id customer item item-type parts-quantity parts-unit-price claimed-parts-cost
                           safety-test-passed? involves-upholstery-work? flammability-compliance-confirmed?
                           repair-completed? item-returned?
@@ -265,29 +261,29 @@
          (map #(pull->ticket (d/pull (d/db conn) ticket-pull [:ticket/id %])))
          (sort-by :id)))
   (safety-screening-of [_ id]
-    (dec* (d/q '[:find ?p . :in $ ?tid
+    (ls/dec* (d/q '[:find ?p . :in $ ?tid
                 :where [?k :safety-screening/ticket-id ?tid] [?k :safety-screening/payload ?p]]
               (d/db conn) id)))
   (flammability-screening-of [_ id]
-    (dec* (d/q '[:find ?p . :in $ ?tid
+    (ls/dec* (d/q '[:find ?p . :in $ ?tid
                 :where [?k :flammability-screening/ticket-id ?tid] [?k :flammability-screening/payload ?p]]
               (d/db conn) id)))
   (assessment-of [_ ticket-id]
-    (dec* (d/q '[:find ?p . :in $ ?tid
+    (ls/dec* (d/q '[:find ?p . :in $ ?tid
                 :where [?a :assessment/ticket-id ?tid] [?a :assessment/payload ?p]]
               (d/db conn) ticket-id)))
   (ledger [_]
     (->> (d/q '[:find ?s ?f :where [?e :ledger/seq ?s] [?e :ledger/fact ?f]] (d/db conn))
          (sort-by first)
-         (mapv (comp dec* second))))
+         (mapv (comp ls/dec* second))))
   (completion-history [_]
     (->> (d/q '[:find ?s ?r :where [?e :completion/seq ?s] [?e :completion/record ?r]] (d/db conn))
          (sort-by first)
-         (mapv (comp dec* second))))
+         (mapv (comp ls/dec* second))))
   (return-history [_]
     (->> (d/q '[:find ?s ?r :where [?e :return/seq ?s] [?e :return/record ?r]] (d/db conn))
          (sort-by first)
-         (mapv (comp dec* second))))
+         (mapv (comp ls/dec* second))))
   (next-completion-sequence [_ jurisdiction]
     (or (d/q '[:find ?n . :in $ ?j
               :where [?e :completion-sequence/jurisdiction ?j] [?e :completion-sequence/next ?n]]
@@ -308,13 +304,13 @@
       (d/transact! conn [(ticket->tx value)])
 
       :assessment/set
-      (d/transact! conn [{:assessment/ticket-id (first path) :assessment/payload (enc payload)}])
+      (d/transact! conn [{:assessment/ticket-id (first path) :assessment/payload (ls/enc payload)}])
 
       :safety-screening/set
-      (d/transact! conn [{:safety-screening/ticket-id (first path) :safety-screening/payload (enc payload)}])
+      (d/transact! conn [{:safety-screening/ticket-id (first path) :safety-screening/payload (ls/enc payload)}])
 
       :flammability-screening/set
-      (d/transact! conn [{:flammability-screening/ticket-id (first path) :flammability-screening/payload (enc payload)}])
+      (d/transact! conn [{:flammability-screening/ticket-id (first path) :flammability-screening/payload (ls/enc payload)}])
 
       :ticket/mark-completed
       (let [ticket-id (first path)
@@ -324,7 +320,7 @@
         (d/transact! conn
                      [(ticket->tx (assoc ticket-patch :id ticket-id))
                       {:completion-sequence/jurisdiction jurisdiction :completion-sequence/next next-n}
-                      {:completion/seq (count (completion-history s)) :completion/record (enc (get result "record"))}])
+                      {:completion/seq (count (completion-history s)) :completion/record (ls/enc (get result "record"))}])
         result)
 
       :ticket/mark-returned
@@ -335,12 +331,12 @@
         (d/transact! conn
                      [(ticket->tx (assoc ticket-patch :id ticket-id))
                       {:return-sequence/jurisdiction jurisdiction :return-sequence/next next-n}
-                      {:return/seq (count (return-history s)) :return/record (enc (get result "record"))}])
+                      {:return/seq (count (return-history s)) :return/record (ls/enc (get result "record"))}])
         result)
       nil)
     s)
   (append-ledger! [s fact]
-    (d/transact! conn [{:ledger/seq (count (ledger s)) :ledger/fact (enc fact)}])
+    (d/transact! conn [{:ledger/seq (count (ledger s)) :ledger/fact (ls/enc fact)}])
     fact)
   (with-tickets [s tickets]
     (when (seq tickets) (d/transact! conn (mapv ticket->tx (vals tickets)))) s))
