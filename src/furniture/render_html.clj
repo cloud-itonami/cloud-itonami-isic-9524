@@ -222,7 +222,7 @@
 (defn- warn [v] (str "<span class=\"warn\">" v "</span>"))
 (defn- crit [v] (str "<span class=\"critical\">" v "</span>"))
 (defn- muted [v] (str "<span class=\"muted\">" v "</span>"))
-(defn- num [v] (str "<span class=\"num\">" (esc v) "</span>"))
+(defn- figure [v] (str "<span class=\"num\">" (esc v) "</span>"))
 
 (defn- row [& cells]
   (str "        <tr>" (str/join (map #(str "<td>" % "</td>") cells)) "</tr>"))
@@ -245,15 +245,15 @@
 ;; --- run summary -------------------------------------------------------
 
 (defn- summary-rows [db ledger]
-  [(row "Ledger facts (append-only)" (num (count ledger)))
-   (row "Committed ops" (num (count (commit-facts ledger))))
-   (row "Governor HARD holds" (crit (num (count (hold-facts ledger)))))
+  [(row "Ledger facts (append-only)" (figure (count ledger)))
+   (row "Committed ops" (figure (count (commit-facts ledger))))
+   (row "Governor HARD holds" (crit (figure (count (hold-facts ledger)))))
    (row "Distinct HARD rules fired"
-        (str (num (count (distinct-hold-rules ledger))) " &middot; "
+        (str (figure (count (distinct-hold-rules ledger))) " &middot; "
              (str/join " " (map #(code (str %)) (distinct-hold-rules ledger)))))
-   (row "Draft repair-completion records" (num (count (store/completion-history db))))
-   (row "Draft item-return records" (num (count (store/return-history db))))
-   (row "Tickets in the seeded directory" (num (count (store/all-tickets db))))])
+   (row "Draft repair-completion records" (figure (count (store/completion-history db))))
+   (row "Draft item-return records" (figure (count (store/return-history db))))
+   (row "Tickets in the seeded directory" (figure (count (store/all-tickets db))))])
 
 ;; --- tickets -----------------------------------------------------------
 
@@ -283,7 +283,7 @@
          (esc item)
          (code (str item-type))
          (code jurisdiction)
-         (str (num parts-quantity) " &times; " (num parts-unit-price) " = " (num recomputed))
+         (str (figure parts-quantity) " &times; " (figure parts-unit-price) " = " (figure recomputed))
          (if match?
            (ok (str "claimed " (esc claimed-parts-cost)))
            (crit (str "claimed " (esc claimed-parts-cost) " &ne; " (esc recomputed))))
@@ -304,7 +304,7 @@
          (code subject)
          (crit (code (str rule)))
          (esc detail)
-         (num confidence))))
+         (figure confidence))))
 
 ;; --- action gate -------------------------------------------------------
 
@@ -339,7 +339,7 @@
          (esc name)
          (esc owner-authority)
          (esc legal-basis)
-         (num (count required-evidence))
+         (figure (count required-evidence))
          (if flam
            (ok (esc (:flammability-legal-basis flam)))
            (muted "no flammability regime in this R0 catalog &mdash; not fabricated"))
