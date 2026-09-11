@@ -6,7 +6,7 @@
   stack (`furniture.operation` -> `furniture.governor` ->
   `furniture.store`, via langgraph `g/run*` exactly as
   `furniture.sim` does) through a scenario adapted from this repo's own
-  `furniture.sim` demo driver (`clojure -M:dev:run`, confirmed BEFORE
+  `furniture.sim` demo driver (`kbb -M:dev:run`, confirmed BEFORE
   writing this file to produce a sensible ledger against the real
   seeded ticket ids `ticket-1`..`ticket-5`), and renders the resulting
   store deterministically -- no invented numbers, no timestamps in the
@@ -47,7 +47,7 @@
   guards is silent: a scenario edit that stops exercising the governor
   would otherwise still emit a plausible-looking page.
 
-  Usage: `clojure -M:dev:render-html [out-file]`
+  Usage: `kbb -M:dev:render-html [out-file]`
   (default `docs/samples/operator-console.html`)."
   (:require [jp-go-dds.skin]
             [kotoba.lang.text :as str]
@@ -443,7 +443,7 @@
            (code "furniture.operation") " &rarr; " (code "furniture.governor") " &rarr; "
            (code "furniture.store") ", driven through langgraph "
            (code "g/run*") " by " (code "furniture.render-html")
-           " (" (code "clojure -M:dev:render-html") "). No hand-written rows.")
+           " (" (code "kbb -M:dev:render-html") "). No hand-written rows.")
       (table ["Measure" "Value"] (summary-rows db ledger)))
 
      (section
